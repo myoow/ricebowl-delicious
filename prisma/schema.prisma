@@ -1,0 +1,74 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  CUSTOMER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  whatsapp  String?
+  role      UserRole @default(CUSTOMER)
+  pesanan   Pesanan[]
+}
+
+model Menu {
+  id            Int             @id @default(autoincrement())
+  name          String
+  deskripsi    String?
+  price         Float
+  stok_harian   Int             @default(0)
+  gambar       String?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  detailPesanan DetailPesanan[] // Relasi sebaliknya untuk DetailPesanan
+}
+
+model Pesanan {
+  id                 Int              @id @default(autoincrement())
+  userId             Int
+  metodePembayaranId Int
+  total              Float
+  status             String           @default("pending")
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+  detailPesanan      DetailPesanan[]
+  user               User             @relation(fields: [userId], references: [id])
+  metodePembayaran   MetodePembayaran @relation(fields: [metodePembayaranId], references: [id])
+  pembayaran         Pembayaran[] // Relasi sebaliknya untuk Pembayaran
+}
+
+model DetailPesanan {
+  id        Int      @id @default(autoincrement())
+  pesananId Int
+  menuId    Int
+  quantity  Int
+  pesanan   Pesanan  @relation(fields: [pesananId], references: [id])
+  menu      Menu     @relation(fields: [menuId], references: [id])
+}
+
+model MetodePembayaran {
+  id        Int      @id @default(autoincrement())
+  name      String
+  pembayaran Pembayaran[]
+  pesanan    Pesanan[] // Relasi sebaliknya untuk Pesanan
+}
+
+model Pembayaran {
+  id                    Int                  @id @default(autoincrement())
+  pesananId            Int
+  metodePembayaranId   Int
+  amount               Float
+  pesanan             Pesanan              @relation(fields: [pesananId], references: [id])
+  metodePembayaran     MetodePembayaran     @relation(fields: [metodePembayaranId], references: [id])
+}
