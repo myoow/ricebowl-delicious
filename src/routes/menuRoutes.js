@@ -43,6 +43,27 @@ router.get('/', menuController.getAllMenu);
 
 /**
  * @swagger
+ * /api/menu/{id}:
+ *   get:
+ *     tags: [Menu]
+ *     summary: Ambil menu berdasarkan ID
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         schema:
+ *           type: integer
+ *         required: true
+ *         description: ID menu
+ *     responses:
+ *       200:
+ *         description: Menu berhasil diambil
+ *       404:
+ *         description: Menu tidak ditemukan
+ */
+router.get('/:id', menuController.getMenuById);
+
+/**
+ * @swagger
  * /api/menu:
  *   post:
  *     tags: [Menu]
@@ -87,7 +108,7 @@ router.post('/', upload.single('image'), menuController.createMenu);
  *     requestBody:
  *       required: true
  *       content:
- *         application/json:
+ *         multipart/form-data:
  *           schema:
  *             type: object
  *             properties:
@@ -97,11 +118,16 @@ router.post('/', upload.single('image'), menuController.createMenu);
  *                 type: number
  *               stok_harian:
  *                 type: integer
+ *               deskripsi:
+ *                 type: string
+ *               image:
+ *                 type: string
+ *                 format: binary
  *     responses:
  *       200:
  *         description: Menu berhasil diupdate
  */
-router.put('/:id', menuController.updateMenu);
+router.put('/:id', upload.single('image'), menuController.updateMenu);
 
 /**
  * @swagger

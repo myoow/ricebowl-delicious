@@ -10,6 +10,22 @@ const getAllMenu = async (req, res) => {
   }
 };
 
+// Get Menu By ID
+const getMenuById = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const menu = await prisma.menu.findUnique({
+      where: { id: parseInt(id) },
+    });
+    if (!menu) {
+      return res.status(404).json({ message: 'Menu tidak ditemukan' });
+    }
+    res.status(200).json(menu);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
 // Create Menu
 const createMenu = async (req, res) => {
   const { name, price, stok_harian, deskripsi } = req.body;
@@ -42,17 +58,25 @@ const createMenu = async (req, res) => {
 // Update Menu
 const updateMenu = async (req, res) => {
   const { id } = req.params;
-  const { name, price, stok_harian, deskripsi, gambar } = req.body;
+  const { name, price, stok_harian, deskripsi } = req.body;
+  const file = req.file;
+
   try {
+    const dataToUpdate = {};
+    
+    if (name !== undefined) dataToUpdate.name = name;
+    if (price !== undefined) dataToUpdate.price = parseFloat(price);
+    if (stok_harian !== undefined) dataToUpdate.stok_harian = parseInt(stok_harian);
+    if (deskripsi !== undefined) dataToUpdate.deskripsi = deskripsi;
+    
+    // Jika ada file baru, update gambar; jika tidak, gambar tetap seperti sebelumnya
+    if (file) {
+      dataToUpdate.gambar = `/uploads/${file.filename}`;
+    }
+
     const updatedMenu = await prisma.menu.update({
       where: { id: parseInt(id) },
-      data: {
-        name,
-        price: price ? parseFloat(price) : undefined,
-        stok_harian: stok_harian ? parseInt(stok_harian) : undefined,
-        deskripsi: deskripsi !== undefined ? deskripsi : undefined,
-        gambar: gambar !== undefined ? gambar : undefined,
-      },
+      data: dataToUpdate,
     });
     res.status(200).json(updatedMenu);
   } catch (error) {
@@ -75,6 +99,7 @@ const deleteMenu = async (req, res) => {
 
 module.exports = {
   getAllMenu,
+  getMenuById,
   createMenu,
   updateMenu,
   deleteMenu,

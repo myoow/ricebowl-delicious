@@ -7,6 +7,7 @@ const menuRoutes = require('./routes/menuRoutes');
 const pesananRoutes = require('./routes/pesananRoutes');
 const userRoutes = require('./routes/userRoutes');
 const metodePembayaranRoutes = require('./routes/metodePembayaranRoutes');
+const authRoutes = require('./routes/authRoutes');
 const prisma = require('./prisma/client'); // Import PrismaClient
 
 const app = express();
@@ -37,13 +38,14 @@ app.use(cors());
 app.use(express.json());
 
 // Serve static files dari folder public
-app.use(express.static(path.join(__dirname, '../public')));
+app.use('/uploads', express.static('public/uploads'));
 
 // Routes
 app.use('/api/menu', menuRoutes);
 app.use('/api/pesanan', pesananRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/metode-pembayaran', metodePembayaranRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
