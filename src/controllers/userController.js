@@ -1,4 +1,5 @@
 const prisma = require('../prisma/client');
+const bcrypt = require('bcryptjs');
 
 const isValidWhatsapp = (whatsapp) => {
   if (!whatsapp) return true;
@@ -149,15 +150,18 @@ const deleteUser = async (req, res) => {
   }
 };
 
-// Register (same as createUser but with field validation)
+// Register (Diperbarui agar sinkron dengan Frontend)
 const register = async (req, res) => {
-  const { name, email, password, whatsapp } = req.body;
+  // 1. Tangkap variabel persis sesuai yang dikirim dari Frontend page.tsx
+  const { nama, username, email, password, noWhatsapp } = req.body;
 
-  if (!name || !email || !password) {
-    return res.status(400).json({ message: 'Nama, email, dan password harus diisi' });
+  // 2. Validasi apakah ada yang kosong
+  if (!nama || !username || !email || !password || !noWhatsapp) {
+    return res.status(400).json({ message: 'Semua field harus diisi' });
   }
 
-  if (whatsapp && !isValidWhatsapp(whatsapp)) {
+  // 3. Validasi WhatsApp (kalau fungsi isValidWhatsapp-nya ada di atas)
+  if (noWhatsapp && typeof isValidWhatsapp === 'function' && !isValidWhatsapp(noWhatsapp)) {
     return res.status(400).json({ message: 'Format nomor WhatsApp tidak valid. Contoh: +628123456789 atau 08123456789' });
   }
 
@@ -170,12 +174,15 @@ const register = async (req, res) => {
       return res.status(400).json({ message: 'Email sudah terdaftar' });
     }
 
+    // 4. Masukkan ke database
+    const bcrypt = require('bcryptjs');
+    const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = await prisma.user.create({
       data: {
-        name,
-        email,
-        password,
-        whatsapp: whatsapp || null,
+        name: nama,             // Mapping 'nama' dari frontend ke kolom 'name' di DB
+        email: email,
+        password: hashedPassword, // Pastikan password di-hash sebelum disimpan
+        whatsapp: noWhatsapp || null, // Mapping 'noWhatsapp' ke kolom 'whatsapp'
       },
       select: {
         id: true,

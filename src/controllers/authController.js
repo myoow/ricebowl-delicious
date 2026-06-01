@@ -91,6 +91,7 @@ const registerUser = async (req, res) => {
     const newUser = await prisma.user.create({
       data: {
         name: nama,
+        username: username,
         email,
         password: hashedPassword,
         whatsapp: noWhatsapp,
